@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FE Credit Data Platform Due-Diligence · On-Screen (EN-first)</title>
+<style>
+  :root{
+    --fs:1;
+    --bg:#0a1120; --bg2:#0d1626;
+    --panel:#121d33; --panel2:#18294a; --panel3:#1f3257;
+    --line:#243759; --line2:#2e456e;
+    --text:#eaf1fb; --muted:#8ea3c4; --faint:#647898;
+    --accent:#4cc4ff; --accent2:#22d3ee; --accent-soft:rgba(76,196,255,.13);
+    --gold:#ffc857; --gold-soft:rgba(255,200,87,.1);
+    --rose:#ff7a93; --rose-soft:rgba(255,122,147,.1);
+    --green:#46d6a6; --violet:#b794f6;
+    --side-w:288px;
+    --radius:14px;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(76,196,255,.07), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(183,148,246,.06), transparent 60%),
+      var(--bg);
+    color:var(--text); overflow:hidden;
+    font-size:calc(16px * var(--fs));
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{display:grid; grid-template-columns:var(--side-w) 1fr; height:100vh; transition:grid-template-columns .25s ease}
+  body.collapsed{--side-w:0px}
+  body.collapsed .sidebar{transform:translateX(-100%)}
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    background:linear-gradient(180deg,var(--bg2),var(--bg));
+    border-right:1px solid var(--line);
+    display:flex; flex-direction:column; overflow:hidden; transition:transform .25s ease;
+  }
+  .brand{padding:18px 18px 14px; border-bottom:1px solid var(--line)}
+  .brand .logo{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+  .brand .dot{width:11px;height:11px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 0 12px var(--accent)}
+  .brand h1{font-size:calc(14px * var(--fs));font-weight:700;letter-spacing:.3px;line-height:1.3}
+  .brand .sub{font-size:calc(11px * var(--fs));color:var(--muted);margin-top:4px;line-height:1.5}
+  .nav{flex:1; overflow-y:auto; padding:10px 10px; scrollbar-width:thin; scrollbar-color:var(--line2) transparent}
+  .nav::-webkit-scrollbar{width:6px}
+  .nav::-webkit-scrollbar-thumb{background:var(--line2);border-radius:3px}
+  .nav-item{
+    display:flex; align-items:center; gap:10px; width:100%; text-align:left; cursor:pointer;
+    padding:9px 11px; border-radius:10px; margin-bottom:3px; border:1px solid transparent;
+    background:transparent; color:var(--muted); transition:all .15s ease; position:relative;
+  }
+  .nav-item:hover{background:var(--panel); color:var(--text)}
+  .nav-item.active{background:var(--accent-soft); color:var(--text); border-color:rgba(76,196,255,.35)}
+  .nav-item.active::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:3px;background:var(--accent)}
+  .nav-item .badge{flex:0 0 auto; min-width:34px; height:24px; padding:0 7px; border-radius:7px; background:var(--panel2); color:var(--faint); font-size:calc(11px * var(--fs)); font-weight:600; display:flex;align-items:center;justify-content:center}
+  .nav-item.active .badge{background:var(--accent);color:#06243a}
+  .nav-item .label{flex:1; font-size:calc(12.5px * var(--fs)); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .nav-item .status{flex:0 0 auto; width:9px;height:9px;border-radius:50%;background:var(--faint);opacity:.5}
+  .nav-item .status.s1{background:var(--violet);opacity:1;box-shadow:0 0 8px var(--violet)}
+  .nav-item .status.s2{background:var(--green);opacity:1;box-shadow:0 0 8px var(--green)}
+
+  .tools{padding:12px; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:8px}
+  .tool-row{display:flex; gap:6px}
+  .btn{
+    flex:1; cursor:pointer; border:1px solid var(--line2); background:var(--panel);
+    color:var(--text); padding:8px 6px; border-radius:9px; font-size:calc(12px * var(--fs));
+    font-family:inherit; transition:all .15s ease; display:flex;align-items:center;justify-content:center;gap:5px
+  }
+  .btn:hover{background:var(--panel2); border-color:var(--accent)}
+  .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#06243a; border-color:transparent; font-weight:600}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .btn.danger:hover{border-color:var(--rose); color:var(--rose)}
+
+  /* ---------- Main ---------- */
+  .content{display:flex; flex-direction:column; min-width:0; height:100vh}
+  .topbar{
+    display:flex; align-items:center; gap:14px; padding:14px 26px;
+    border-bottom:1px solid var(--line); background:rgba(13,22,38,.6); backdrop-filter:blur(8px);
+  }
+  .topbar .toggle{cursor:pointer;border:1px solid var(--line2);background:var(--panel);color:var(--muted);width:38px;height:34px;border-radius:9px;font-size:15px;display:flex;align-items:center;justify-content:center}
+  .topbar .toggle:hover{color:var(--accent);border-color:var(--accent)}
+  .crumb{flex:1;min-width:0}
+  .crumb .k{font-size:calc(12px * var(--fs));color:var(--faint);letter-spacing:.5px}
+  .crumb .t{font-size:calc(15px * var(--fs));font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .progress{display:flex;align-items:center;gap:10px}
+  .progress .bar{width:120px;height:6px;border-radius:4px;background:var(--panel2);overflow:hidden}
+  .progress .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .3s}
+  .progress .num{font-size:calc(12px * var(--fs));color:var(--muted);font-variant-numeric:tabular-nums}
+  .navbtn{cursor:pointer;border:1px solid var(--line2);background:var(--panel);color:var(--text);padding:8px 14px;border-radius:9px;font-size:calc(13px * var(--fs));font-family:inherit;transition:all .15s}
+  .navbtn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+  .navbtn:disabled{opacity:.35;cursor:not-allowed}
+
+  .view{flex:1; overflow-y:auto; padding:30px 44px 60px; scrollbar-width:thin; scrollbar-color:var(--line2) transparent}
+  .view::-webkit-scrollbar{width:8px}
+  .view::-webkit-scrollbar-thumb{background:var(--line2);border-radius:4px}
+  .view-wrap{max-width:1180px;margin:0 auto}
+
+  .dim-head{margin-bottom:22px}
+  .dim-no{display:inline-flex;align-items:center;gap:8px;font-size:calc(13px * var(--fs));color:var(--accent);font-weight:600;letter-spacing:.5px;margin-bottom:8px}
+  .dim-no::before{content:"";width:24px;height:2px;background:var(--accent);border-radius:2px}
+  .dim-title{font-size:calc(28px * var(--fs));font-weight:800;line-height:1.2;letter-spacing:.3px}
+  .dim-title-sub{font-size:calc(15px * var(--fs));color:var(--muted);margin-top:6px;font-weight:400}
+
+  .intent{
+    display:flex; gap:14px; align-items:flex-start; margin:20px 0 26px;
+    background:var(--gold-soft); border:1px solid rgba(255,200,87,.25); border-left:4px solid var(--gold);
+    border-radius:10px; padding:15px 18px;
+  }
+  .intent .ic{flex:0 0 auto;width:30px;height:30px;border-radius:8px;background:rgba(255,200,87,.18);display:flex;align-items:center;justify-content:center;font-size:16px}
+  .intent .body{flex:1;min-width:0}
+  .intent .lab{font-size:calc(11px * var(--fs));color:var(--gold);font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px}
+  .intent .main{font-size:calc(14px * var(--fs));color:var(--text);line-height:1.6}
+  .intent .sub{font-size:calc(12.5px * var(--fs));color:var(--muted);line-height:1.6;margin-top:4px}
+
+  .qlist{display:flex;flex-direction:column;gap:13px}
+  .q{
+    display:grid; grid-template-columns:48px 1fr; gap:16px;
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:17px 20px; transition:all .18s ease;
+  }
+  .q:hover{border-color:var(--line2); background:var(--panel2); transform:translateY(-1px); box-shadow:var(--shadow)}
+  .q .qn{
+    width:42px;height:42px;border-radius:11px; background:linear-gradient(135deg,var(--accent-soft),transparent);
+    border:1px solid rgba(76,196,255,.3); color:var(--accent); font-weight:700; font-size:calc(16px * var(--fs));
+    display:flex;align-items:center;justify-content:center;
+  }
+  .q .qc{min-width:0}
+  .q .q-main{font-size:calc(16px * var(--fs)); line-height:1.6; color:var(--text); font-weight:500}
+  .q .q-sub{font-size:calc(13px * var(--fs)); line-height:1.65; color:var(--muted); margin-top:8px; padding-top:8px; border-top:1px dashed var(--line)}
+  .tag{display:inline-block;font-size:calc(11px * var(--fs));font-weight:700;padding:2px 8px;border-radius:6px;margin-right:7px;vertical-align:middle}
+  .tag.risk{background:rgba(255,122,147,.15);color:var(--rose)}
+  .tag.mkt{background:rgba(70,214,166,.15);color:var(--green)}
+  .tag.col{background:rgba(183,148,246,.15);color:var(--violet)}
+  .tag.ops{background:rgba(76,196,255,.15);color:var(--accent)}
+
+  .hero{background:linear-gradient(135deg,var(--panel2),var(--panel));border:1px solid var(--line2);border-radius:18px;padding:28px 30px;margin-bottom:24px}
+  .hero h2{font-size:calc(23px * var(--fs));font-weight:800;margin-bottom:8px}
+  .hero p{color:var(--muted);line-height:1.7;font-size:calc(14px * var(--fs))}
+  .hero .pill{display:inline-block;margin-top:12px;padding:5px 12px;border-radius:20px;background:var(--accent-soft);color:var(--accent);font-size:calc(12px * var(--fs));font-weight:600}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:24px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+  .card.warn{border-color:rgba(255,122,147,.3);background:var(--rose-soft)}
+  .card.gold{border-color:rgba(255,200,87,.3)}
+  .card h3{font-size:calc(14px * var(--fs));font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .card h3 .d{width:8px;height:8px;border-radius:50%}
+  .card ul{list-style:none}
+  .card li{font-size:calc(13px * var(--fs));color:var(--muted);line-height:1.75;padding-left:14px;position:relative}
+  .card li::before{content:"";position:absolute;left:0;top:11px;width:5px;height:5px;border-radius:50%;background:var(--faint)}
+  .card.warn li::before{background:var(--rose)}
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;text-align:center}
+  .stat .v{font-size:calc(22px * var(--fs));font-weight:800;color:var(--accent);line-height:1.1}
+  .stat .l{font-size:calc(11px * var(--fs));color:var(--muted);margin-top:5px}
+  .sec-title{font-size:calc(16px * var(--fs));font-weight:700;margin:8px 0 14px;display:flex;align-items:center;gap:9px}
+  .sec-title::before{content:"";width:4px;height:18px;background:var(--accent);border-radius:3px}
+
+  .tbl-wrap{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:13px 16px;text-align:left;border-bottom:1px solid var(--line);font-size:calc(13px * var(--fs));vertical-align:top}
+  th{background:var(--panel2);color:var(--muted);font-weight:600;font-size:calc(12px * var(--fs));letter-spacing:.3px;position:sticky;top:0}
+  tr:last-child td{border-bottom:none}
+  tr.fec-sep td{background:var(--rose-soft);color:var(--rose);font-weight:700;font-size:calc(11px * var(--fs));text-transform:uppercase;letter-spacing:1px}
+  tr.fec-row td{background:rgba(255,122,147,.04)}
+  td.edit{outline:none;border-radius:6px;min-width:120px}
+  td.edit:focus{background:var(--accent-soft);box-shadow:inset 0 0 0 2px var(--accent)}
+  td.edit:empty::before{content:"Click to note…";color:var(--faint);font-style:italic}
+  .muted{color:var(--faint)}
+
+  .open-q{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--violet);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+  .open-q .oq{font-size:calc(16px * var(--fs));font-weight:600;margin-bottom:4px}
+  .open-q .oqe{font-size:calc(12.5px * var(--fs));color:var(--muted);margin-bottom:10px}
+  .note{width:100%;min-height:60px;background:var(--bg2);border:1px solid var(--line);border-radius:9px;padding:11px 14px;color:var(--text);font-size:calc(14px * var(--fs));font-family:inherit;resize:vertical;outline:none;line-height:1.6}
+  .note:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .note::placeholder{color:var(--faint)}
+
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:calc(12px * var(--fs));color:var(--muted);margin-top:6px}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .legend i{width:9px;height:9px;border-radius:50%}
+  .hint{position:fixed;bottom:16px;right:20px;font-size:calc(11px * var(--fs));color:var(--faint);background:rgba(13,22,38,.8);padding:7px 12px;border-radius:8px;border:1px solid var(--line);backdrop-filter:blur(6px);pointer-events:none}
+  kbd{background:var(--panel2);border:1px solid var(--line2);border-bottom-width:2px;border-radius:4px;padding:1px 6px;font-size:calc(10px * var(--fs));color:var(--text);font-family:inherit}
+
+  @media (max-width:760px){
+    .app{grid-template-columns:1fr}
+    .sidebar{position:fixed;left:0;top:0;bottom:0;width:288px;z-index:50;box-shadow:var(--shadow)}
+    body.collapsed .sidebar{transform:translateX(-100%)}
+    .view{padding:20px 18px 60px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo"><span class="dot"></span><h1>FE Credit Data Platform<br>Due-Diligence</h1></div>
+      <div class="sub">Benchmarked vs. WeBank · Status Diagnosis<br>On-Screen Discussion Edition · 2026.06</div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="tools">
+      <div class="tool-row">
+        <button class="btn" id="fontMinus" title="Smaller font">A−</button>
+        <button class="btn" id="fontPlus" title="Larger font">A+</button>
+        <button class="btn" id="fullscreen" title="Fullscreen">⛶ Full</button>
+      </div>
+      <div class="tool-row">
+        <button class="btn primary" id="export">⬇ Export Notes</button>
+        <button class="btn danger" id="clear" title="Clear all notes">Clear</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <button class="toggle" id="toggleSide" title="Toggle sidebar">☰</button>
+      <div class="crumb">
+        <div class="k" id="crumbK">Overview</div>
+        <div class="t" id="crumbT">Background &amp; Methodology</div>
+      </div>
+      <div class="progress">
+        <div class="bar"><i id="progBar"></i></div>
+        <span class="num" id="progNum">1 / 14</span>
+      </div>
+      <button class="navbtn" id="prev">← Prev</button>
+      <button class="navbtn" id="next">Next →</button>
+    </div>
+    <div class="view"><div class="view-wrap" id="view"></div></div>
+  </main>
+</div>
+<div class="hint">Navigate <kbd>←</kbd> <kbd>→</kbd> · Status <kbd>S</kbd> · Fullscreen <kbd>F</kbd></div>
+
+<script>
+/* ============ DATA (English-first; Chinese follows as supplement) ============ */
+const dimensions = [
+  {
+    no:"Dimension 1", short:"D1 Strategy",
+    title:"Data Strategy, Organization & Planning", titleSub:"数据战略、组织与规划",
+    intent:{main:"Assess whether data work has top-down design, a dedicated team and sustained investment — or remains ad-hoc, request-driven and uncoordinated.", sub:"判断数据工作是否'有顶层设计、专职团队、持续投入'，还是'需求驱动、零散建设、无人统筹'。"},
+    qs:[
+      {en:"Does FE Credit have an explicit data strategy / data-middleware (中台) roadmap? Which function leads it (CDO / IT / Business)? Current headcount of the data team (developers, data engineers, analysts, data scientists)?", zh:"是否有明确的数据战略/数据中台规划？哪个部门牵头？数据团队当前规模（开发、数据工程、分析师、算法）？"},
+      {en:"How are data demands generated and prioritized today — a 'project-based' model (business requests, IT fulfills) or a unified data-product roadmap?", zh:"数据需求如何产生与排期——业务提需求、IT 接单的'项目制'，还是有统一的数据产品规划？"},
+      {en:"Major data-platform investments and systems built in the past 2–3 years? ROI of the largest ones (did the business actually adopt them)?", zh:"过去 2–3 年主要投入与建成的系统？最大几笔投入回报如何（业务方是否真正用起来）？"},
+      {en:"Biggest frictions in data work today — budget, talent, cross-department collaboration, or business trust and willingness to use data?", zh:"当前数据工作最大阻力——预算、人才、跨部门协同，还是业务方的信任与使用意愿？"},
+      {en:"Hard regulatory requirements (SBV — State Bank of Vietnam; personal-data protection) on governance / cross-border transfer / localization? Have they become a mandatory build driver?", zh:"监管（SBV、个人信息保护）对治理/出境/本地化有哪些硬性要求？是否已成为强制驱动力？"}
+    ]
+  },
+  {
+    no:"Dimension 2", short:"D2 Architecture & Data Lake",
+    title:"Data Architecture, Warehouse Layering & Data Lake Status", titleSub:"数据架构、数仓分层与 Data Lake 现状",
+    intent:{main:"Given FEC already has an AWS Data Lake, assess whether proper layering (ODS/DWD/DWS/ADS) and subject areas are built on top — or it has degenerated into a 'data swamp', source-direct with inconsistent definitions.", sub:"在已有 AWS Data Lake 前提下，判断其上是否建立规范分层与主题域，还是退化为'数据沼泽'、贴源直用、口径不一致。"},
+    qs:[
+      {en:"What data lives in the AWS Data Lake (App behavior logs, transactions, KYC, payments, service)? Formats (Parquet/ORC/JSON/CSV) and zone strategy (raw / curated / consumption)? Scale and growth? Has it become a 'data swamp' — lands only, no catalog, no governance?", zh:"Data Lake 存了哪些数据？格式与分区/分层策略？规模与增长？是否已退化为'数据沼泽'——只进不出、无目录、无治理？"},
+      {en:"Is a warehouse layering (source-replica ODS → detail DWD → summary DWS → application ADS) built on top of the lake? Or still only a raw lake with no layered processing / normalized modeling? Is it actually enforced?", zh:"Data Lake 之上是否已建数仓分层（ODS→DWD→DWS→ADS）？还是仅有原始湖、无分层加工？是否真正执行？"},
+      {en:"Sources and ingestion: how do AWS-platform data (CASA / Payment Hub / Middleware / App SDK logs) land in the lake? Is the on-prem VPB core data (T24 Core / OCB / CASA Platform) replicated into the lake? The on-prem→cloud link (frequency, method, CDC/batch, latency)?", zh:"AWS 平台数据如何入湖？VPB 本地核心数据（T24/OCB/CASA）是否同步入湖？跨数据中心→云集成链路如何？"},
+      {en:"How are subject areas partitioned? Is the full credit lifecycle covered (acquisition, application, underwriting, disbursement, repayment, overdue, collections, service)? Are cross-product (cash loan / POS installment / motorcycle loan) definitions unified?", zh:"主题域如何划分？是否覆盖信贷全流程？跨产品口径是否统一？"},
+      {en:"Is the same metric (outstanding balance / delinquency rate / approval rate) consistent across the cloud Data Lake, on-prem systems and reports? Which side is the source of truth? How are disputes arbitrated?", zh:"同一指标在云上 Data Lake、本地系统、各报表间口径是否一致？以哪侧为准？分歧如何仲裁？"}
+    ]
+  },
+  {
+    no:"Dimension 3", short:"D3 AWS Compute & Hybrid",
+    title:"AWS Cloud Compute/Storage & Hybrid-Cloud Data Integration", titleSub:"AWS 云上计算/存储与混合云数据集成",
+    intent:{main:"Assess whether storage and compute choices are sound, batch/real-time needs are met, and whether AWS-cloud ↔ on-prem(VPB DC) integration is smooth or has network/latency/consistency bottlenecks.", sub:"判断存储/计算选型是否合理、是否满足批量/实时，以及云↔本地集成是否顺畅或存在网络/延迟/一致性瓶颈。"},
+    qs:[
+      {en:"Which AWS services are used for storage and compute? Storage (S3 + Lake Formation?), batch ETL (EMR / Glue?), ad-hoc query (Athena?), cloud warehouse (Redshift?), real-time (Kinesis / MSK / Flink on EMR?), orchestration (Step Functions / MWAA?)? Clear rationale and architecture governance?", zh:"存储与计算分别用了哪些 AWS 服务（S3/EMR/Glue/Athena/Redshift/Kinesis/MWAA）？是否有明确选型理由与架构治理？"},
+      {en:"Is a cloud warehouse (Redshift) or lakehouse built on top of the S3 Data Lake? Separate storage or federated (Redshift Spectrum / Athena)? Are EMR, Glue and Redshift running in parallel — redundant storage and operational complexity?", zh:"是否在 S3 之上建了云数仓（Redshift）或湖仓一体？分离存储还是联邦查询？是否多套引擎导致重复存储与运维复杂？"},
+      {en:"Real-time capability — ms/s-level stream processing (Kinesis / MSK / Flink)? Are real-time risk decisions, anti-fraud interception and real-time marketing live? How is real-time vs offline consistency maintained?", zh:"实时计算能力如何？风控实时决策、反欺诈实时拦截、实时营销是否上线？实时与离线口径如何一致？"},
+      {en:"Hybrid-cloud integration: how is data synced between AWS and the on-prem VPB DC (AWS Direct Connect / VPN / public internet? frequency?)? Are core-system (T24) change-data (CDC / binlog) ingested into the lake in real/near-real time? How are bandwidth, stability and consistency guaranteed?", zh:"AWS 与 VPB 本地数据中心如何同步（Direct Connect/VPN/公网？频率）？T24 变更数据（CDC/binlog）是否实时入湖？带宽/稳定性/一致性如何保障？"},
+      {en:"Orchestration and observability — batch scheduler (MWAA / Airflow / Step Functions)? Pipeline monitoring, data-delivery SLA (daily completion time), failure alerting and retry? Any data incidents affecting the business in the past six months?", zh:"跑批用什么调度？数据产出 SLA、失败告警与重试？近半年是否发生过影响业务的数据事故？"}
+    ]
+  },
+  {
+    no:"Dimension 4", short:"D4 Data Assets (CDA)",
+    title:"Data Asset Management (vs. CDA)", titleSub:"数据资产管理体系（对标 CDA）",
+    intent:{main:"Assess whether data is visible / findable / usable / governed — or duplicated, hard to find and use, with no inventory.", sub:"判断数据是否'可见可找可用可管'，还是'重复建设、找数难、用数难、无台账'。"},
+    qs:[
+      {en:"Is there a data-asset catalog / metadata-management platform? Has a bank-wide data inventory been done? Roughly how many tables, metrics and tags?", zh:"是否有数据资产目录/元数据平台？全行资产是否盘点？大约多少表/指标/标签？"},
+      {en:"Is field-level lineage (source → report) established? Can impact analysis (which downstream assets a source-table change affects) be performed?", zh:"数据血缘（字段级）是否建立？影响分析能否做到？"},
+      {en:"Do metrics / tags have unified naming, business definitions, owners and approval workflows? Are there many 'same name, different meaning' cases?", zh:"指标/标签是否有统一命名、口径、Owner、审批？是否有大量'同名不同义'？"},
+      {en:"Is asset usage measurable (heavily used vs zombie assets)? Is there a service-based asset-distribution mechanism?", zh:"资产使用情况是否可度量（高频 vs 僵尸）？是否有资产下发服务化机制？"},
+      {en:"How is the 'find / understand / use data' experience today — average time to locate one metric or table? Main bottleneck?", zh:"'找数/懂数/用数'体验如何？找一个指标/表平均多久？主要卡点？"}
+    ]
+  },
+  {
+    no:"Dimension 5", short:"D5 Low-Code Variables",
+    title:"Tag & Risk-Variable Low-Code Development Platform", titleSub:"标签与风控变量低代码加工平台",
+    intent:{main:"Core productivity of a consumer-finance platform. Are variables / tags centralized, config-driven and reusable — or hard-coded, reinvented and slow?", sub:"消费金融数据平台核心生产力。变量/标签是'集中化、配置化、可复用'还是'硬编码、重复造轮子、上线慢'。"},
+    qs:[
+      {en:"How are risk variables (features) / tags developed today — pure code (SQL/Python/Spark) by IT, or self-service config by business/strategy? Any low-code / drag-and-drop capability?", zh:"风控变量/标签如何开发——纯代码由 IT，还是业务可自助配置？是否有低代码/拖拉拽能力？"},
+      {en:"Average time for a new variable 'request → develop → validate → go-live for strategy' (WeBank: low-code compresses this significantly)? Where is the bottleneck?", zh:"新变量'需求→开发→验证→上线'平均多久（微众低代码显著压缩）？瓶颈？"},
+      {en:"Is there a reusable operator / function library (WeBank 220+ built-in operators)? Is there graph-variable (1-hop / multi-hop) engineering? Has graph / relationship-network data been built?", zh:"是否有可复用算子库（微众 220+）？是否有图谱变量（一度/多度）？图谱数据是否已建？"},
+      {en:"Are the 'analysis mode (sample validation)' and 'production mode (online serving)' of variables separated? Is there a sample-comparison validation step before go-live?", zh:"变量'分析态（样本验证）'与'生产态（线上供数）'是否分离？上线前是否有样本比对验证？"},
+      {en:"Do variables / tags achieve 'define once, use everywhere' (serving risk decisions, marketing and analytics simultaneously)? Or does each system build its own copy with definition drift?", zh:"变量/标签是否'一处定义多处使用'？还是各系统各加工一套、口径漂移？"},
+      {en:"Timeliness management — can the same variable be used independently or flexibly combined across different timeliness (real-time / near-real-time / offline)?", zh:"变量加工时效管理——同一变量是否支持不同时效独立使用或灵活联结？"}
+    ]
+  },
+  {
+    no:"Dimension 6", short:"D6 External Data Sources",
+    title:"External Data Source Management (Appendix Focus)", titleSub:"外部数据源管理（Appendix 对标重点）",
+    intent:{main:"Consumer finance depends heavily on external data. Is it unified / standardized / billable / stable — or each team self-integrates, fields messy, cost out of control, links unstable?", sub:"消费金融高度依赖外部数据。判断是'统一接入、标准化、可计费、稳定可控'还是'各策略自接、字段混乱、成本失控、链路不稳'。"},
+    qs:[
+      {en:"How many external data sources are integrated (bureau / anti-fraud / multi-lending / telco / device)? Average onboarding time (WeBank ≤15 days)? Is onboarding config-driven?", zh:"接入多少家外部数据源？新源平均接入多久（微众 ≤15 天）？是否配置化？"},
+      {en:"Has external data been standardized (XML / JSON / Text from various sources → unified JSON, unified field types and names)? How mature is field standardization?", zh:"外部数据是否标准化（XML/JSON/Text→统一 JSON、统一字段）？字段标准化程度？"},
+      {en:"Stability safeguards for external-data links — concurrency control, routing / failover, circuit-breaker / degradation, and hit-rate / no-data-rate / error-code (0000 hit / 9006 not-found / 9999 system-error) monitoring?", zh:"链路稳定性保障——并发控制、路由切换、降级熔断、查得率/查无率/错误码监控？"},
+      {en:"Billing and cost management — are source calls managed by strategy dimension? Defaults / caching / hit-rate optimization to control cost? Is per-customer data cost traceable?", zh:"计费与成本——是否按策略维度管理调用？默认值/缓存/查得率优化？单客单次成本可追踪？"},
+      {en:"Are risk-strategy input parameters unified (WeBank 100k+)? Is the variable → strategy-input mapping configurable? Are encryption requirements (AES256 / RSA2048 / SM2 / SM3) implemented?", zh:"风险策略入参是否统一管理（微众 10 万+）？变量→入参映射可配置？加密是否落实？"}
+    ]
+  },
+  {
+    no:"Dimension 7", short:"D7 Self-Service BI (IDOS)",
+    title:"Self-Service Analytics & BI (vs. IDOS)", titleSub:"自助分析与 BI（对标 IDOS）",
+    intent:{main:"Is analytics concentrated in a few IT/BI hands with requests queuing — or business self-service, ad-hoc and multi-channel?", sub:"判断分析能力是'集中在少数 IT/BI、需求排队'还是'业务自助、即席、多端'。"},
+    qs:[
+      {en:"What BI / reporting tools are used (Tableau / Power BI / FineBI / in-house)? Are reports mostly IT-custom-built, or can business self-serve via drag-and-drop analytics?", zh:"报表/BI 用什么工具？IT 定制为主还是业务可自助拖拽？"},
+      {en:"Can business / analysts define custom metric dimensions, run ad-hoc queries and interactive analysis? Is self-service SQL supported?", zh:"业务/分析师能否自定义维度、即席查询、交互式分析？是否支持 SQL 自助？"},
+      {en:"Multi-channel consumption of analytics — PC, mobile, email subscription? What is leadership's daily data-viewing habit?", zh:"多端消费——PC/移动端/邮件订阅？管理层日常看数习惯？"},
+      {en:"Data-consumption activity — how many users, how many active reports / dashboards? Which departments use it most, which barely at all? Are there 'built but unused' reports?", zh:"消费活跃度——多少用户/报表？哪些部门用得多/几乎不用？是否有'建了没人用'的报表？"},
+      {en:"Fulfillment efficiency of data-extraction requests — average turnaround for one request? Backlog size?", zh:"取数需求满足效率——平均 turnaround？积压？"}
+    ]
+  },
+  {
+    no:"Dimension 8", short:"D8 Data Quality",
+    title:"Data Quality & Governance", titleSub:"数据质量与治理",
+    intent:{main:"Is data quality reactive firefighting discovered after the fact — or proactive monitoring, prevention and closed-loop?", sub:"判断数据质量是'被动救火、事后发现'还是'主动监控、事前预防、有闭环'。"},
+    qs:[
+      {en:"How is data quality assured — is there DQ monitoring (completeness, accuracy, timeliness, consistency)? Coverage of quality rules? How are quality issues discovered (monitoring alerts vs. business complaints)?", zh:"数据质量如何保障——是否有 DQ 监控？规则覆盖？问题如何发现（告警 vs 投诉）？"},
+      {en:"Closed-loop process after a quality issue — is there an owner, a remediation SLA, root-cause analysis and a post-mortem mechanism?", zh:"质量问题闭环——是否有 Owner、修复 SLA、根因分析、复盘？"},
+      {en:"Is master / reference data (customers, products, organization, code dictionaries) centrally managed? Or does each system maintain its own copy that doesn't reconcile?", zh:"主数据/参考数据是否统一管理？还是各系统各维护一套对不上？"},
+      {en:"Are data standards (field naming, types, codes) actually enforced in practice? Is there a performance / review mechanism for data governance?", zh:"数据标准是否落地执行？数据治理是否有考核机制？"}
+    ]
+  },
+  {
+    no:"Dimension 9", short:"D9 AI Enablement",
+    title:"AI & Intelligent Enablement", titleSub:"AI 与智能化赋能",
+    intent:{main:"Has the bank moved from 'looking at history' to 'AI-driven prediction / decision support'? What is the current state of LLM / intelligent applications?", sub:"判断是否从'看历史'走向'AI 预测/辅助决策'，及大模型/智能化现状。"},
+    qs:[
+      {en:"Where have ML / algorithmic models been deployed (credit scoring, anti-fraud, collection scoring, marketing response)? Model iteration frequency and degree of online deployment (decision engine)?", zh:"ML/算法模型在哪些场景落地？迭代频率与线上化（决策引擎）程度？"},
+      {en:"Are there capabilities like 'intelligent Q&A' (natural-language querying) and 'root-cause analysis' (automatic attribution of metric anomalies)? Any exploration or deployment of large language models (LLM)?", zh:"是否有'智能问数'、'根因分析'？大模型（LLM）是否有探索或落地？"},
+      {en:"Are 'digital employees / RPA' replacing manual work in operations, collections and R&D collaboration?", zh:"是否有'数字员工/RPA'在运营、催收、研发协同替代人工？"},
+      {en:"What is the biggest blocker for AI — insufficient data foundation, lack of algorithm talent, or unidentified business scenarios?", zh:"AI 最大阻碍——数据基础不够、算法人才缺乏、还是业务场景未被识别？"}
+    ]
+  },
+  {
+    no:"Dimension 10", short:"D10 Cloud Security & Cost",
+    title:"Cloud Security, Privacy/Compliance & Cloud Cost", titleSub:"云安全、隐私合规与云成本",
+    intent:{main:"With data on AWS public cloud, diagnose three things specifically — AWS Region & cross-border transfer (Vietnam PDPD Decree 13 / SBV), cloud data-security governance, and whether cloud cost (FinOps) is controllable.", sub:"FEC 数据上 AWS，重点诊断 Region/数据出境、云上数据安全、云成本（FinOps）是否可控。"},
+    qs:[
+      {en:"Which AWS Region is used — a Vietnam-local AZ/region or an overseas one (e.g., Singapore)? Does customer PII constitute a 'cross-border data transfer'? Does it comply with Vietnam's PDPD (Decree 13) and SBV on cross-border transfer, data localization, consent and purpose limitation? Is there a regulator-accepted arrangement (DPA, impact assessment)?", zh:"AWS 部署在哪个 Region？越南本地还是境外（如新加坡）？客户 PII 是否构成'数据出境'？是否符合 PDPD/SBV 的出境、本地化、同意、目的限制？是否有监管认可的合规安排？"},
+      {en:"Cloud data security: is data classification done? For sensitive data (ID, income, contacts, location, KYC images) in S3 / Data Lake — are at-rest encryption (KMS), masking and tokenization enabled? Are Lake Formation fine-grained access control (FGAC) and row/column-level permissions in place?", zh:"云上数据安全：分级分类完成？敏感数据在 S3/Data Lake 的加密（KMS）、脱敏、tokenization？Lake Formation FGAC 与行列级权限？"},
+      {en:"Identity & access governance (IAM) and audit: who can access which Data Lake data? Are CloudTrail audit logs, least-privilege and privilege-creep risks addressed? Key / credential management (KMS / Secrets Manager)? Is the VPB DC ↔ AWS network path (Direct Connect / VPN) encrypted and isolated? Any data-leak incidents or regulatory penalties in the past three years?", zh:"IAM 与审计：谁能访问哪些数据？CloudTrail、最小权限、越权风险？密钥管理？VPB↔AWS 通道加密隔离？近三年是否有泄露/处罚？"},
+      {en:"Cloud cost and FinOps: monthly AWS bill size and trend? Main cost items (S3 storage / EMR-Redshift compute / Kinesis streaming / cross-network data egress)? Any cost monitoring & alerting, RI / Savings-Plan optimization, team / business chargeback (showback / chargeback)? Is on-prem ↔ cloud data-transfer cost under control?", zh:"云成本与 FinOps：月度账单规模与趋势？主要成本项？成本监控、RI/Savings Plan、按团队分摊？本地↔云传输费失控？"}
+    ]
+  },
+  {
+    no:"Dimension 11", short:"D11 Business Value",
+    title:"Business Enablement & Value Closed-Loop (Reality Check)", titleSub:"业务场景赋能与价值闭环（落地检验）",
+    intent:{main:"Reverse-check from the business side whether the data platform truly creates value — avoid 'tech for tech's sake'.", sub:"从业务侧反向检验数据平台是否真正产生价值，避免'技术自嗨'。"},
+    qs:[
+      {en:"Risk: how well does the data platform support underwriting decisions, credit-limit pricing, anti-fraud and early warning? After models / variables go live, have risk metrics (NPL rate, first-payment default) improved?", zh:"风控：对审批决策、额度定价、反欺诈、早预警支撑程度？上线后不良率、首期违约是否改善？", tag:{cls:"risk",tx:"Risk"}},
+      {en:"Marketing & Acquisition: does it support customer-segment insight, precision marketing and existing-customer management? Have acquisition cost and conversion rate improved thanks to data?", zh:"营销/获客：是否支持客群洞察、精准营销、存量经营？获客成本与转化率是否因数据优化？", tag:{cls:"mkt",tx:"Marketing"}},
+      {en:"Collections: do collection strategy, contact-right recovery, collection scoring and digitalized collection operations rely on the data platform? Has the recovery rate improved through data?", zh:"催收：策略、失联修复、催收评分、作业数字化是否依赖平台？催回率是否提升？", tag:{cls:"col",tx:"Collections"}},
+      {en:"Operations & Service: are customer segmentation, churn early-warning and service-experience metrics data-driven?", zh:"运营/客服：客户分群、流失预警、服务体验指标是否数据化？", tag:{cls:"ops",tx:"Operations"}},
+      {en:"From a business head / CEO perspective: rate the current help of data to business decisions (0–10)? What are the Top 3 business problems you most want the data platform to solve next?", zh:"从业务一号位/CEO 视角：数据对决策帮助打几分（0–10）？最希望平台接下来解决的 Top 3 业务问题？"}
+    ]
+  }
+];
+
+const benchmarkRows = [
+  {k:"Total data / Daily growth", zh:"数据总量 / 日增量", v:"10.5 PB / 75 TB", fec:false},
+  {k:"Core tables DWD / DWS", zh:"核心表 DWD / DWS", v:"3600+ / 1700+", fec:false},
+  {k:"Asset scale (tables / metrics / tags)", zh:"数据资产规模", v:"A 1000+ / B 9000+ / C 8000+", fec:false},
+  {k:"External sources / onboarding", zh:"外部数据源 / 接入周期", v:"200+ / ≤15 days", fec:false},
+  {k:"Risk operators / graph", zh:"风控算子 / 图谱", v:"220+ / graph warehouse", fec:false},
+  {k:"Strategy input params", zh:"风险策略入参", v:"100k+", fec:false},
+  {k:"Variable dev-to-live", zh:"变量上线周期", v:"low-code compresses", fec:false},
+  {k:"Self-service analytics", zh:"自助分析月活", v:"22000+ / 30 days", fec:false},
+  {k:"Real-time compute", zh:"实时计算", v:"batch + NRT + stream", fec:false},
+  {k:"DQ monitoring coverage", zh:"DQ 监控覆盖", v:"full pipeline", fec:false},
+  {k:"AI enablement", zh:"AI 赋能", v:"NL-Q&A / RCA / RPA", fec:false},
+  {sep:true, t:"FEC cloud-specific (no WeBank baseline) / FEC 云架构专项"},
+  {k:"AWS Data Lake storage", zh:"S3 存储", v:"—", fec:true},
+  {k:"AWS compute stack", zh:"AWS 计算栈", v:"—", fec:true, hint:"EMR/Glue/Athena/Redshift/Kinesis"},
+  {k:"Cloud warehouse", zh:"云数仓", v:"—", fec:true, hint:"Redshift yes/no + Spectrum"},
+  {k:"Hybrid integration", zh:"混合云集成", v:"—", fec:true, hint:"DX/VPN + CDC into lake?"},
+  {k:"AWS Region / transfer", zh:"Region / 出境合规", v:"—", fec:true, hint:"local/cross-border + PDPD"},
+  {k:"Monthly cloud cost", zh:"云成本（月）", v:"—", fec:true, hint:"+ FinOps?"}
+];
+
+const openQs = [
+  {en:"In three sentences, how would you describe the current state of FE Credit's data platform?", zh:"如果让你用三句话描述 FE Credit 数据平台的现状，你会怎么说？"},
+  {en:"Over the past year, what are the top three data-related things that gave you the most headaches?", zh:"过去一年，数据相关最让你头疼的三件事是什么？"},
+  {en:"If you could only focus on three things in the next year to improve the data platform, which three would you choose, and why?", zh:"如果未来一年只能重点做三件事来提升数据平台，你会选哪三件？为什么？"},
+  {en:"Which part of WeBank's architecture is most worth borrowing for FE Credit? Which part is hardest to land in the short term?", zh:"你认为微众这套架构里，哪一部分对 FE Credit 最有借鉴价值？哪一部分短期内最难落地？"}
+];
+
+const sections = [{type:"overview", nav:"Overview"}];
+dimensions.forEach((d,i)=>sections.push({type:"dimension", nav:d.short, dim:i, idx:sections.length}));
+sections.push({type:"benchmark", nav:"Benchmark"});
+sections.push({type:"wrapup", nav:"Wrap-up"});
+
+/* ============ STATE / STORAGE ============ */
+const LS = {
+  get(k,def){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch(e){return def;} },
+  set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+let status = LS.get("fec-en-status", {});
+let notes  = LS.get("fec-en-notes", {});
+let cur = 0;
+
+/* ============ RENDER ============ */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+
+function renderNav(){
+  const nav = $("#nav");
+  nav.innerHTML = sections.map((s,i)=>{
+    const st = s.type==="dimension" ? status[s.dim] : null;
+    const stCls = st?` s${st}`:"";
+    const badge = s.type==="overview"?"◎":(s.type==="dimension"?s.nav.split(" ")[0]:(s.type==="benchmark"?"∑":"✦"));
+    return `<button class="nav-item ${i===cur?'active':''}" data-i="${i}">
+      <span class="badge">${badge}</span>
+      <span class="label">${esc(s.nav)}</span>
+      ${s.type==="dimension"?`<span class="status${stCls}" data-st="${i}" title="Click to cycle status"></span>`:""}
+    </button>`;
+  }).join("");
+  nav.querySelectorAll(".nav-item").forEach(b=>b.onclick=()=>go(+b.dataset.i));
+  nav.querySelectorAll(".status").forEach(b=>b.onclick=e=>{e.stopPropagation(); cycleStatus(sections[+b.dataset.st].dim);});
+}
+
+function renderView(){
+  const s = sections[cur];
+  const v = $("#view");
+  $("#crumbK").textContent = s.nav;
+  $("#progBar").style.width = ((cur+1)/sections.length*100)+"%";
+  $("#progNum").textContent = `${cur+1} / ${sections.length}`;
+  $("#prev").disabled = cur===0;
+  $("#next").disabled = cur===sections.length-1;
+
+  if(s.type==="overview"){ v.innerHTML = overviewHtml(); $("#crumbT").textContent="Background & Methodology"; }
+  else if(s.type==="dimension"){ v.innerHTML = dimHtml(dimensions[s.dim]); $("#crumbT").textContent=dimensions[s.dim].short; }
+  else if(s.type==="benchmark"){ v.innerHTML = benchHtml(); $("#crumbT").textContent="Key Quantitative Benchmark"; bindEdit(); }
+  else if(s.type==="wrapup"){ v.innerHTML = wrapHtml(); $("#crumbT").textContent="Open-ended Wrap-up"; bindEdit(); }
+  $(".view").scrollTop=0;
+}
+
+function overviewHtml(){
+  return `
+  <div class="hero">
+    <h2>FE Credit Data Platform — Due-Diligence Questionnaire</h2>
+    <p>Using <b>WeBank's retail-credit data system</b> as a reference architecture (benchmark), systematically assess FE Credit's current data-platform status, capability maturity and business enablement, then diagnose core pain points and gaps as input for the subsequent build/optimization plan.</p>
+    <p style="color:var(--faint);font-size:calc(12.5px * var(--fs));margin-top:8px">以微众银行零售信贷数据体系为参考架构，摸清现状、诊断痛点，为后续建设方案提供输入。</p>
+    <span class="pill">Gap Analysis · 11 dimensions · Current state → Pain points → Maturity</span>
+  </div>
+
+  <div class="sec-title">Known Architecture Context (from FEC diagram)</div>
+  <div class="cards">
+    <div class="card warn">
+      <h3><span class="d" style="background:var(--rose)"></span>AWS Public Cloud · Digital Customer Platform</h3>
+      <ul>
+        <li>Data Lake, CASA, Payment Hub, Middleware, UnSec Integrator</li>
+        <li>Mobile: Firebase / SmartOTP / HyperVerge (KYC)</li>
+        <li>Ecosystem: Pega, Finacle, IFace (KYC)</li>
+      </ul>
+    </div>
+    <div class="card gold">
+      <h3><span class="d" style="background:var(--gold)"></span>VPB On-prem Data Center</h3>
+      <ul>
+        <li>T24 Core (core banking)</li>
+        <li>OCB Platform, CASA Platform</li>
+        <li>Payments: NAPAS / PAYOO / SMARTPAY / VNPOST</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3><span class="d" style="background:var(--accent)"></span>Hybrid Architecture · Diagnostic Focus</h3>
+      <ul>
+        <li>Data Lake maturity (layering / data swamp)</li>
+        <li>Cloud ↔ on-prem integration (CDC / Direct Connect)</li>
+        <li>Region / cross-border / cloud cost (FinOps)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="sec-title">WeBank Benchmark Baseline (reference, not target)</div>
+  <div class="stat-grid">
+    <div class="stat"><div class="v">10.5 PB</div><div class="l">Managed data / +75 TB daily</div></div>
+    <div class="stat"><div class="v">3600+</div><div class="l">DWD core tables (DWS 1700+)</div></div>
+    <div class="stat"><div class="v">9000+</div><div class="l">B-class assets (external sources)</div></div>
+    <div class="stat"><div class="v">220+</div><div class="l">Low-code operators / graph</div></div>
+    <div class="stat"><div class="v">≤15 days</div><div class="l">External source onboarding</div></div>
+    <div class="stat"><div class="v">100k+</div><div class="l">Risk strategy input params</div></div>
+  </div>
+
+  <div class="legend" style="margin-top:26px">
+    <span><i style="background:var(--faint)"></i>Pending</span>
+    <span><i style="background:var(--violet)"></i>In progress (press <kbd>S</kbd>)</span>
+    <span><i style="background:var(--green)"></i>Done</span>
+  </div>`;
+}
+
+function dimHtml(d){
+  const i = dimensions.indexOf(d);
+  const st = status[i]||0;
+  const stName = ["Pending","In progress","Done"][st];
+  const qhtml = d.qs.map((q,n)=>`
+    <div class="q">
+      <div class="qn">${n+1}</div>
+      <div class="qc">
+        <div class="q-main">${q.tag?`<span class="tag ${q.tag.cls}">${q.tag.tx}</span>`:""}${esc(q.en)}</div>
+        <div class="q-sub">${esc(q.zh)}</div>
+      </div>
+    </div>`).join("");
+  return `
+  <div class="dim-head">
+    <div class="dim-no">${d.no}　<span style="color:var(--faint);font-weight:400">| Status: ${stName} (press <kbd>S</kbd> to cycle)</span></div>
+    <div class="dim-title">${esc(d.title)}</div>
+    <div class="dim-title-sub">${esc(d.titleSub)}</div>
+  </div>
+  <div class="intent">
+    <div class="ic">◎</div>
+    <div class="body">
+      <div class="lab">Diagnostic Intent</div>
+      <div class="main">${esc(d.intent.main)}</div>
+      <div class="sub">${esc(d.intent.sub)}</div>
+    </div>
+  </div>
+  <div class="qlist">${qhtml}</div>`;
+}
+
+function benchHtml(){
+  let rows = benchmarkRows.map((r,n)=>{
+    if(r.sep) return `<tr class="fec-sep"><td colspan="4">${esc(r.t)}</td></tr>`;
+    const k="b_"+n, k2="bg_"+n;
+    const cur=notes[k]||"", gap=notes[k2]||"";
+    return `<tr class="${r.fec?'fec-row':''}">
+      <td><b>${esc(r.k)}</b><br><span class="muted" style="font-size:calc(11px * var(--fs))">${esc(r.zh)}</span></td>
+      <td>${r.fec?'<span class="muted">—</span>':esc(r.v)}</td>
+      <td class="edit" contenteditable="true" data-k="${k}">${esc(cur)}</td>
+      <td class="edit" contenteditable="true" data-k="${k2}">${esc(gap)}</td>
+    </tr>`;
+  }).join("");
+  return `
+  <div class="dim-head">
+    <div class="dim-no">Benchmark</div>
+    <div class="dim-title">Key Quantitative Benchmark</div>
+    <div class="dim-title-sub">关键量化对标速查表 — 现状列可点击现场记录（自动保存）</div>
+  </div>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Capability</th><th>WeBank Baseline</th><th>FEC Current</th><th>Gap / Maturity</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  </div>`;
+}
+
+function wrapHtml(){
+  let qs = openQs.map((q,n)=>{
+    const k="o_"+n, val=notes[k]||"";
+    return `<div class="open-q">
+      <div class="oq">Q${n+1}. ${esc(q.en)}</div>
+      <div class="oqe">${esc(q.zh)}</div>
+      <textarea class="note" data-k="${k}" placeholder="Record answers / key points here…">${esc(val)}</textarea>
+    </div>`;
+  }).join("");
+  return `
+  <div class="dim-head">
+    <div class="dim-no">Wrap-up</div>
+    <div class="dim-title">Open-ended Wrap-up Questions</div>
+    <div class="dim-title-sub">开放性总结问题 — 记录区可现场输入并自动保存</div>
+  </div>
+  ${qs}
+  <div class="legend" style="margin-top:18px"><span>💡 Click <b>Export Notes</b> (bottom-left) to generate a Markdown file after the discussion.</span></div>`;
+}
+
+function bindEdit(){
+  document.querySelectorAll("[data-k]").forEach(el=>{
+    el.addEventListener("input",()=>{
+      notes[el.dataset.k] = el.tagName==="TEXTAREA"?el.value:el.innerText;
+      LS.set("fec-en-notes", notes);
+    });
+  });
+}
+
+/* ============ INTERACTION ============ */
+function go(i){ cur=Math.max(0,Math.min(sections.length-1,i)); renderNav(); renderView(); }
+function cycleStatus(dim){ if(dim===undefined) return; status[dim]=((status[dim]||0)+1)%3; LS.set("fec-en-status",status); renderNav(); if(sections[cur].type==="dimension") renderView(); }
+function setFont(d){ let f=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--fs"))||1; f=Math.max(.85,Math.min(1.5,+(f+d).toFixed(2))); document.documentElement.style.setProperty("--fs",f); LS.set("fec-en-fs",f); }
+function toggleFull(){ if(!document.fullscreenElement){ document.documentElement.requestFullscreen?.(); } else { document.exitFullscreen?.(); } }
+function toggleSide(){ document.body.classList.toggle("collapsed"); LS.set("fec-en-collapsed", document.body.classList.contains("collapsed")); }
+
+function exportMD(){
+  const stName=["Pending","In progress","Done"];
+  let md=`# FE Credit Data Platform Due-Diligence — Discussion Notes\n\nExported: ${new Date().toLocaleString()}\n\n`;
+  md+=`## Progress\n\n`;
+  dimensions.forEach((d,i)=>{ if(status[i]) md+=`- ${d.no} ${d.title} — **${stName[status[i]]}**\n`; });
+  md+=`\n## Key Quantitative Benchmark\n\n| Capability | WeBank Baseline | FEC Current | Gap / Maturity |\n|---|---|---|---|\n`;
+  benchmarkRows.forEach((r,n)=>{ if(r.sep){md+=`\n**${r.t}**\n\n| Capability | WeBank Baseline | FEC Current | Gap / Maturity |\n|---|---|---|---|\n`; return;} md+=`| ${r.k} (${r.zh}) | ${r.fec?"—":r.v} | ${(notes["b_"+n]||"").replace(/\|/g,"/")} | ${(notes["bg_"+n]||"").replace(/\|/g,"/")} |\n`; });
+  md+=`\n## Open-ended Wrap-up\n\n`;
+  openQs.forEach((q,n)=>{ md+=`### Q${n+1}. ${q.en}\n> ${q.zh}\n\n${(notes["o_"+n]||"_not recorded_")}\n\n`; });
+  const blob=new Blob([md],{type:"text/markdown;charset=utf-8"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download=`FEC_Data_Platform_Discussion_Notes_${new Date().toISOString().slice(0,10)}.md`;
+  a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+
+function clearAll(){
+  if(!confirm("Clear all discussion notes and status? This cannot be undone.")) return;
+  status={}; notes={}; LS.del("fec-en-status"); LS.del("fec-en-notes");
+  renderNav(); renderView();
+}
+
+/* ============ INIT ============ */
+function init(){
+  document.documentElement.style.setProperty("--fs", LS.get("fec-en-fs",1));
+  if(LS.get("fec-en-collapsed",false)) document.body.classList.add("collapsed");
+  renderNav(); renderView();
+  $("#prev").onclick=()=>go(cur-1);
+  $("#next").onclick=()=>go(cur+1);
+  $("#toggleSide").onclick=toggleSide;
+  $("#fontMinus").onclick=()=>setFont(-0.05);
+  $("#fontPlus").onclick=()=>setFont(0.05);
+  $("#fullscreen").onclick=toggleFull;
+  $("#export").onclick=exportMD;
+  $("#clear").onclick=clearAll;
+  document.addEventListener("keydown",e=>{
+    if(e.target.isContentEditable||e.target.tagName==="TEXTAREA") return;
+    if(e.key==="ArrowLeft"){go(cur-1);}
+    else if(e.key==="ArrowRight"){go(cur+1);}
+    else if(e.key==="Home"){go(0);}
+    else if(e.key==="End"){go(sections.length-1);}
+    else if(e.key.toLowerCase()==="s"){ if(sections[cur].type==="dimension") cycleStatus(sections[cur].dim); }
+    else if(e.key.toLowerCase()==="f"){ toggleFull(); }
+  });
+}
+init();
+</script>
+</body>
+</html>
