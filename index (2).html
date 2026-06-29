@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件目录首页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background: #f5f7fa;
+            padding: 40px 20px;
+        }
+        .wrap {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        h1 {
+            color: #2563eb;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .tip {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .file-list {
+            list-style: none;
+        }
+        .file-list li {
+            border-bottom: 1px solid #eee;
+        }
+        .file-list a {
+            display: block;
+            padding: 14px 16px;
+            color: #222;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .file-list a:hover {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <h1>站点 HTML 文件导航</h1>
+    <p class="tip">当前目录下所有页面文件</p>
+
+    <ul class="file-list" id="list"></ul>
+
+    <footer>
+        Powered by GitHub Pages
+    </footer>
+</div>
+
+<script>
+// 1. 这里填写你所有 html 文件名，新增页面只需在这里追加
+const htmlFiles = [
+    "index.html",
+    "gemini-code-1782700423587.html",    
+    "260627HPbatch3.html",
+    "260617NI.html"
+];
+
+const listEl = document.getElementById("list");
+
+// 过滤掉自身 index.html，只展示其他页面
+const otherPages = htmlFiles.filter(name => name !== "index.html");
+
+if (otherPages.length === 0) {
+    listEl.innerHTML = '<li class="empty">暂无其他HTML页面</li>';
+} else {
+    otherPages.forEach(filename => {
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.href = filename;
+        a.textContent = filename;
+        a.target = "_blank"; // 新标签打开
+        li.appendChild(a);
+        listEl.appendChild(li);
+    });
+}
+</script>
+</body>
+</html>
