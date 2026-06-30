@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FE Credit · Initial Interview · Interview Deck</title>
+<style>
+  :root{
+    --bg:#0f172a; --bg2:#111c33; --card:#172441; --card2:#1e2f55;
+    --line:#2a3c63; --txt:#eaf0fb; --mut:#8da2c8; --mut2:#5d6f93;
+    --blue:#3b82f6; --blue-d:#1e3a8a;
+    --orange:#f97316; --orange-d:#7c2d12;
+    --red:#ef4444; --red-d:#7f1d1d;
+    --green:#22c55e; --amber:#f59e0b;
+    --zh:#7d8fb5;            /* Chinese as secondary, muted */
+    --shadow:0 10px 30px rgba(0,0,0,.45);
+  }
+  html.light{
+    --bg:#f1f5f9; --bg2:#e7edf6; --card:#ffffff; --card2:#f8fafc;
+    --line:#dbe4f0; --txt:#0b1220; --mut:#475569; --mut2:#94a3b8;
+    --zh:#7d8da6;
+    --shadow:0 8px 24px rgba(15,23,42,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"Segoe UI",-apple-system,"PingFang SC","Microsoft YaHei",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--txt);
+    -webkit-font-smoothing:antialiased;overflow:hidden;
+  }
+
+  /* ===== top bar ===== */
+  header{
+    height:54px;display:flex;align-items:center;gap:14px;
+    padding:0 18px;border-bottom:1px solid var(--line);
+    background:var(--bg2);position:relative;z-index:5;
+  }
+  .brand{font-weight:700;font-size:15px;letter-spacing:.3px;white-space:nowrap}
+  .brand small{color:var(--mut);font-weight:500;margin-left:8px;font-size:12px}
+  .progress{flex:1;display:flex;gap:4px;align-items:center;justify-content:center}
+  .dot{
+    width:22px;height:6px;border-radius:3px;background:var(--line);cursor:pointer;
+    transition:.2s;
+  }
+  .dot.seg-m{background:var(--blue-d)} .dot.seg-p{background:var(--orange-d)} .dot.seg-b{background:var(--red-d)}
+  .dot.done{opacity:.55}
+  .dot.active{width:34px;height:7px;background:var(--blue);box-shadow:0 0 10px var(--blue)}
+  .dot.seg-m.active{background:var(--blue)}
+  .dot.seg-p.active{background:var(--orange);box-shadow:0 0 10px var(--orange)}
+  .dot.seg-b.active{background:var(--red);box-shadow:0 0 10px var(--red)}
+  .dot.aux{width:10px;height:10px;border-radius:50%}
+  .controls{display:flex;gap:6px}
+  .btn{
+    background:var(--card);color:var(--txt);border:1px solid var(--line);
+    padding:7px 12px;border-radius:8px;font-size:12.5px;cursor:pointer;
+    transition:.15s;display:inline-flex;align-items:center;gap:6px;
+  }
+  .btn:hover{background:var(--card2);border-color:var(--blue)}
+  .btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+  kbd{
+    font-family:inherit;font-size:11px;background:var(--card2);border:1px solid var(--line);
+    border-radius:4px;padding:1px 5px;color:var(--mut);
+  }
+
+  /* ===== stage ===== */
+  #stage{height:calc(100% - 54px - 34px);overflow:auto;position:relative}
+  .slide{display:none;height:100%;padding:34px 6vw 24px}
+  .slide.active{display:flex;flex-direction:column;animation:in .3s ease}
+  @keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  .seg-tag{
+    display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;
+    padding:5px 14px;border-radius:999px;margin-bottom:14px;letter-spacing:.5px;
+  }
+  .seg-tag .zhsub{color:var(--zh);font-weight:500;font-size:11.5px}
+  .seg-m{background:rgba(59,130,246,.15);color:var(--blue);border:1px solid rgba(59,130,246,.4)}
+  .seg-p{background:rgba(249,115,22,.15);color:var(--orange);border:1px solid rgba(249,115,22,.4)}
+  .seg-b{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.4)}
+  .seg-x{background:rgba(139,162,200,.12);color:var(--mut);border:1px solid var(--line)}
+
+  .qnum{font-size:13px;color:var(--mut);font-weight:700;letter-spacing:2px}
+  h1.title{font-size:clamp(26px,3.4vw,40px);font-weight:800;line-height:1.15;margin:4px 0 0}
+  .title-zh{font-size:clamp(12px,1.2vw,15px);color:var(--zh);font-weight:500;margin:6px 0 16px}
+
+  .question{
+    font-size:clamp(19px,2.15vw,28px);line-height:1.5;font-weight:600;
+    padding:22px 26px;background:var(--card);border:1px solid var(--line);
+    border-left:6px solid var(--blue);border-radius:12px;box-shadow:var(--shadow);
+  }
+  .question.zh{
+    font-size:clamp(13px,1.25vw,16px);color:var(--zh);font-weight:400;
+    margin-top:10px;border-left:6px solid var(--line);box-shadow:none;background:var(--bg2);
+    display:none;             /* hidden by default — EN primary */
+    padding:14px 18px;
+  }
+  body.with-zh .question.zh{display:block;animation:in .2s ease}
+
+  .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+  .meta{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+  }
+  .meta.full{grid-column:1/-1}
+  .meta h4{font-size:11px;letter-spacing:1.5px;color:var(--mut2);text-transform:uppercase;margin-bottom:7px;font-weight:700}
+  .meta h4 .zhsub{color:var(--zh);font-weight:500;text-transform:none;letter-spacing:0;margin-left:5px;font-size:11px}
+  .meta p{font-size:14.5px;line-height:1.55}
+  .signals{display:flex;flex-direction:column;gap:7px}
+  .sig{font-size:14px;line-height:1.45;display:flex;gap:8px;align-items:flex-start}
+  .sig .ico{font-size:16px;line-height:1.3}
+  .sig.good .ico{color:var(--green)} .sig.bad .ico{color:var(--amber)}
+
+  .notes-wrap{margin-top:14px}
+  .notes-wrap h4{font-size:11px;letter-spacing:1.5px;color:var(--mut2);text-transform:uppercase;margin-bottom:6px;font-weight:700}
+  .notes-wrap h4 .zhsub{color:var(--zh);font-weight:500;text-transform:none;letter-spacing:0;margin-left:5px;font-size:11px}
+  textarea.notes{
+    width:100%;min-height:62px;resize:vertical;background:var(--bg2);
+    border:1px dashed var(--line);border-radius:8px;color:var(--txt);
+    padding:10px 12px;font-family:inherit;font-size:13.5px;line-height:1.5;
+  }
+  textarea.notes:focus{outline:none;border-color:var(--blue);border-style:solid}
+
+  /* special slides */
+  .center-slide{align-items:center;justify-content:center;text-align:center}
+  .cover-pill{font-size:13px;color:var(--mut);letter-spacing:3px;margin-bottom:18px}
+  .cover-title{font-size:clamp(34px,5vw,60px);font-weight:900;line-height:1.1;margin-bottom:8px}
+  .cover-sub{font-size:clamp(16px,1.8vw,22px);color:var(--mut);max-width:780px;margin:0 auto 8px}
+  .cover-sub-zh{font-size:clamp(13px,1.3vw,16px);color:var(--zh);max-width:780px;margin:0 auto 24px}
+  .threads{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:10px}
+  .thread{padding:14px 22px;border-radius:12px;font-weight:700;font-size:15px;background:var(--card);border:1px solid var(--line)}
+  .thread small{color:var(--zh);font-weight:500;display:block;margin-top:3px;font-size:12px}
+
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  table th,table td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  table th{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:1px}
+  table td.b{font-weight:700;color:var(--blue)}
+  .card-block{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)}
+
+  ul.plain{list-style:none;display:flex;flex-direction:column;gap:11px}
+  ul.plain li{font-size:15px;line-height:1.5;padding-left:22px;position:relative}
+  ul.plain li:before{content:"▸";position:absolute;left:0;color:var(--blue)}
+  .probe-q{font-weight:700;color:var(--orange)}
+  .zh-line{color:var(--zh);font-size:13px;margin-top:4px}
+
+  .scroll-area{flex:1;overflow:auto;padding-right:4px}
+
+  /* footer */
+  footer{
+    height:34px;display:flex;align-items:center;justify-content:space-between;
+    padding:0 18px;border-top:1px solid var(--line);background:var(--bg2);
+    font-size:12px;color:var(--mut2);
+  }
+  footer .hint span{margin-right:14px}
+  .whereami{font-weight:700;color:var(--mut)}
+
+  .nav-arrow{position:fixed;top:50%;transform:translateY(-50%);width:44px;height:44px;
+    border-radius:50%;background:var(--card);border:1px solid var(--line);color:var(--txt);
+    font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    z-index:6;box-shadow:var(--shadow);transition:.15s}
+  .nav-arrow:hover{background:var(--blue);border-color:var(--blue);color:#fff}
+  #prev{left:14px} #next{right:14px}
+
+  @media(max-width:760px){.meta-grid{grid-template-columns:1fr}.nav-arrow{display:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">FE Credit · Initial Interview <small>Interview Deck</small></div>
+  <div class="progress" id="progress"></div>
+  <div class="controls">
+    <button class="btn" id="btnZH" title="Toggle Chinese (Z)">中 ZH</button>
+    <button class="btn" id="btnOverview" title="Toggle overview (O)">▦ Overview</button>
+    <button class="btn" id="btnTheme" title="Toggle theme (T)">🌓</button>
+    <button class="btn" id="btnFull" title="Fullscreen (F)">⛶ Fullscreen</button>
+  </div>
+</header>
+
+<div id="stage"></div>
+
+<button class="nav-arrow" id="prev" title="Previous (←)">‹</button>
+<button class="nav-arrow" id="next" title="Next (→)">›</button>
+
+<footer>
+  <div class="hint">
+    <span><kbd>←</kbd><kbd>→</kbd> navigate</span>
+    <span><kbd>Z</kbd> 中文</span>
+    <span><kbd>O</kbd> overview</span>
+    <span><kbd>F</kbd> fullscreen</span>
+    <span><kbd>T</kbd> theme</span>
+  </div>
+  <div class="whereami" id="whereami"></div>
+</footer>
+
+<script>
+/* ---------- data ---------- */
+const SEG = {
+  m:{cls:'seg-m',name:'Management',zh:'管理架构',qrange:'Q1–Q3 · 12–15 min'},
+  p:{cls:'seg-p',name:'Platform',zh:'平台架构',qrange:'Q4–Q7 · 25–30 min'},
+  b:{cls:'seg-b',name:'Blocking Business',zh:'阻碍性业务',qrange:'Q8–Q10 · 15 min'},
+};
+
+const slides = [];
+slides.push({type:'cover'});
+slides.push({type:'agenda'});
+slides.push({type:'benchmark'});
+
+const Q = [
+{id:'Q1',seg:'m',en:'Strategy, Lead & Team Size',zh:'战略 · 牵头方 · 团队规模',
+ q:'Does FE Credit have an explicit data strategy / data-middleware roadmap? Which function leads it (CDO / IT / Business)? Current headcount of the data team (devs, engineers, analysts, data scientists)?',
+ qzh:'FE Credit 是否有明确的数据战略/中台规划？由哪个部门牵头（CDO/IT/业务）？团队规模？',
+ intent:'Top-down design + dedicated team + sustained investment — or ad-hoc, request-driven, uncoordinated? Sets the tone in one answer.',
+ bench:'WeBank has a full CDO org + dedicated middleware team.',
+ good:'CDO / CDO Office, middleware set-up, 10s+ of staff',
+ bad:'No explicit strategy, one group under IT, single-digit headcount, project-by-project',
+ notes:['Strategy / lead','Team size & structure','Maturity (0–10)']},
+
+{id:'Q2',seg:'m',en:'Demand Model',zh:'需求产生与排期',
+ q:'How are data demands generated and prioritized — project-based (business requests, IT fulfills) or a unified data-product roadmap?',
+ qzh:'数据需求如何产生与排期——项目制（业务提、IT 接）还是统一数据产品规划？',
+ intent:'Project-based = reactive, reinventing the wheel; product-based = proactive reuse. Types the working model.',
+ bench:'',
+ good:'Product roadmap, prioritization review, assets accumulate & reused',
+ bad:'Ticket-based, done-and-scattered, no accumulation',
+ notes:['Current model','Backlog / scheduling']},
+
+{id:'Q3',seg:'m',en:'Biggest Frictions',zh:'最大阻力',
+ q:'What are the biggest frictions today — budget, talent, cross-department collaboration, or the business side\'s trust/willingness to use data?',
+ qzh:'当前数据工作最大阻力——预算、人才、跨部门协同，还是业务信任与使用意愿？',
+ intent:'Let the client vent, build rapport, surface the real bottleneck (money / people / collaboration) — what the proposal must route around or tackle.',
+ probe:'"How long has this been stuck? Did you try to fix it? Where does it break?"',
+ good:'',bad:'',
+ notes:['Top frictions (as stated, ranked)','1.','2.','3.']},
+
+{id:'Q4',seg:'p',en:'Data Lake & Warehouse Layering',zh:'Data Lake 与数仓分层',
+ q:'What lives in the AWS Data Lake (App logs, transactions, KYC, payments, CS)? Formats & raw/curated/consumption zones? Has it become a "data swamp"? Most importantly: is a proper ODS → DWD → DWS → ADS layering built on top and actually enforced — or still a raw lake used source-direct?',
+ qzh:'Data Lake 存了什么（格式/分区/规模）？是否数据沼泽？其上是否已建 ODS→DWD→DWS→ADS 分层并真正执行，还是贴源直用？',
+ intent:'FEC already has a lake — the question isn\'t "is there a lake" but "is there disciplined layering on it." Source-direct use = root of inconsistent definitions.',
+ bench:'WeBank core tables DWD 3600+ / DWS 1700+, 14 subject-area warehouses.',
+ good:'Four layers clear, naming convention, sizable DWD/DWS',
+ bad:'Raw lake only, business queries source tables, definitions diverge',
+ notes:['Contents / scale','Layers actually present (ODS/DWD/DWS/ADS)','Swamp signs (Y/N)']},
+
+{id:'Q5',seg:'p',en:'Hybrid-Cloud Integration',zh:'混合云集成（FEC 核心瓶颈）',
+ q:'Is the on-prem VPB core data (T24 Core / OCB / CASA Platform) replicated into the lake? How does on-prem↔cloud integration work (AWS Direct Connect / VPN? frequency? is T24 change-data CDC/binlog ingested near-real-time?)? How are cross-network bandwidth, latency and consistency guaranteed?',
+ qzh:'本地核心 T24/OCB/CASA 是否入湖？云↔本地链路（DX/VPN？频率？T24 CDC 准实时？）带宽/延迟/一致性？',
+ intent:'FEC is "AWS lake + on-prem core" hybrid — this link is usually the pain point. If core data can\'t reach the lake, the lake is decorative. Best place to expose tech & cost bottlenecks.',
+ bench:'',
+ good:'T24 CDC near-real-time into lake, stable DX, core data complete in lake',
+ bad:'Core not in lake / T+1 batch only / public-internet VPN / manual exports',
+ notes:['T24/OCB/CASA in lake (Y/N)','Integration (DX/VPN/batch/CDC) & frequency','Latency / stability pain']},
+
+{id:'Q6',seg:'p',en:'Subject Areas & Metric Consistency',zh:'主题域与口径一致性',
+ q:'Do subject areas cover the full credit lifecycle (acquisition→application→underwriting→disbursement→repayment→overdue→collections→CS)? Are cross-product definitions unified? Is the same metric (outstanding balance / delinquency / approval rate) consistent across the cloud lake, on-prem systems and reports? Which side is the source of truth? How are disputes arbitrated?',
+ qzh:'主题域覆盖信贷全流程吗？跨产品口径统一吗？同一指标跨湖/本地/报表一致吗？以谁为准？如何仲裁？',
+ intent:'Reveals governance level instantly — "the numbers don\'t match" is near-universally the #1 data lead pain, and the best entry point for governance value.',
+ bench:'',
+ good:'Lifecycle coverage, definition dictionary, arbitration, single source of truth',
+ bad:'Cross-product mismatch, reports fight each other, no source of truth',
+ notes:['Subject-area coverage','Consistency (consistent / fight)','Source of truth']},
+
+{id:'Q7',seg:'p',en:'Low-Code Variable / Tag Engineering',zh:'风控变量低代码加工',
+ q:'How are risk variables (features) / tags developed — pure code (SQL/Python/Spark) by IT, or self-service config by business/strategy? Is there any low-code / drag-and-drop engineering + a reusable operator library? Average time from a new variable "request → develop → validate → go-live for strategy"? Bottleneck? Is it "define once, use everywhere"?',
+ qzh:'变量/标签如何开发——IT 纯代码还是业务自助低代码？有可复用算子库吗？新变量上线多久？瓶颈？是否"一处定义多处用"？',
+ intent:'The core productivity of a consumer-finance data platform. Long lead time = hard-coded, reinventing; low-code = days to deploy.',
+ bench:'WeBank 220+ built-in operators, 100k+ strategy params, low-code compresses lead time sharply.',
+ good:'Low-code platform, strategy self-service, operators reused, days to go-live',
+ bad:'Pure IT coding, each system builds its own copy, weeks to go-live',
+ notes:['Dev method (code / low-code)','New-var go-live (days / weeks)','Bottleneck stage']},
+
+{id:'Q8',seg:'b',en:'Asset Catalog & Find-Use Experience',zh:'资产目录与找数体验',
+ q:'Is there a data-asset catalog / metadata platform? Has a bank-wide inventory been done (tables / metrics / tags)? Is field-level lineage built? On average, how long for an analyst to locate one metric or table? Main bottleneck?',
+ qzh:'有数据资产目录/元数据平台吗？盘点过吗？字段级血缘？分析师找一个指标/表平均多久？卡点？',
+ intent:'Is data "visible, findable, usable, governed"? Days to find = no governance; seconds = mature asset system.',
+ bench:'WeBank A 1000+ / B 9000+ / C 8000+ (txn / external / tags).',
+ good:'Catalog, lineage, inventoried, minutes to find',
+ bad:'No catalog, finding by asking around / reading code, days',
+ notes:['Catalog / metadata platform (Y/N)','Tables / metrics / tags scale','Avg time to find']},
+
+{id:'Q9',seg:'b',en:'Data Quality & Governance Loop',zh:'数据质量与治理闭环',
+ q:'How is data quality assured — is there DQ monitoring (completeness / accuracy / timeliness / consistency)? Are issues caught by monitoring alerts or by business complaints? Is there a closed loop after discovery (owner, remediation SLA, RCA, post-mortem)? Is master/reference data centrally managed?',
+ qzh:'DQ 监控（完整/准确/及时/一致）？靠告警发现还是业务投诉？有无闭环（Owner/SLA/根因/复盘）？主数据统一管吗？',
+ intent:'Reactive firefighting (complaints) vs proactive prevention (alerts + closed loop). Pins governance maturity directly.',
+ bench:'',
+ good:'Full-pipeline DQ monitoring, owner + SLA, proactive detection, post-mortems',
+ bad:'Complaint-driven, firefighting after the fact, no owner, no loop',
+ notes:['DQ monitoring (Y/N, coverage)','Detection (alerts / complaints)','Closed loop (Y/N)','Recent quality incidents']},
+
+{id:'Q10',seg:'b',en:'Business Value + CEO Top 3 (Closer)',zh:'业务赋能 + CEO Top 3',
+ q:'How well does the platform support risk decisions, anti-fraud, early warning, marketing acquisition and collections? After models/variables go live, have risk metrics (NPL rate, first-payment default) actually improved? From a business head / CEO perspective, rate the current help of data to business decisions (0–10)? What are the Top 3 business problems you most want the data platform to solve next?',
+ qzh:'平台对风控/反欺诈/早预警/营销/催收支撑如何？模型上线后不良率/首期违约真改善了吗？CEO 视角打几分（0–10）？最想解决的 Top 3 业务问题？',
+ intent:'Reverse-check whether the platform truly creates value (avoid "tech for tech\'s sake"); Top 3 becomes the entry point for the next-phase proposal — the most important takeaway.',
+ probe:'"If those constraints were removed, which one would you want to do first, and why?"',
+ good:'',bad:'',
+ notes:['Enablement rating (0–10)','Proven-value scenarios','Top 3 to solve (★ proposal entry points)','1.','2.','3.']},
+];
+// (Probes / Backup / Post-meeting sections removed per request — deck now ends at Q10)
+
+/* ---------- render ---------- */
+const stage = document.getElementById('stage');
+const progressEl = document.getElementById('progress');
+const whereEl = document.getElementById('whereami');
+
+function renderProgress(){
+  progressEl.innerHTML='';
+  slides.forEach((s,i)=>{
+    const d=document.createElement('div');
+    d.className='dot';
+    if(s.type!=='question') d.classList.add('aux');
+    if(s.seg||(s.type==='question'&&s.q)) d.classList.add('seg-'+(s.q?s.q.seg:s.seg));
+    d.title='Slide '+(i+1);
+    d.onclick=()=>go(i);
+    progressEl.appendChild(d);
+  });
+}
+
+function build(){
+  // inject the 10 question slides right after the Benchmark slide
+  const reordered=[];
+  slides.forEach(s=>{
+    reordered.push(s);
+    if(s.type==='benchmark'){ Q.forEach(q=>reordered.push({type:'question',q})); }
+  });
+  slides.length=0;
+  slides.push(...reordered);
+
+  stage.innerHTML='';
+  slides.forEach((s,i)=>{
+    const el=document.createElement('section');
+    el.className='slide';
+    el.innerHTML=htmlFor(s,i);
+    stage.appendChild(el);
+  });
+  renderProgress();
+}
+
+function htmlFor(s,i){
+  if(s.type==='cover') return cover();
+  if(s.type==='agenda') return agenda();
+  if(s.type==='benchmark') return benchmark();
+  if(s.type==='question') return question(s.q,i);
+  return '';
+}
+
+function cover(){
+  return `<div class="center-slide" style="width:100%">
+    <div class="cover-pill">FE CREDIT · DATA PLATFORM</div>
+    <div class="cover-title">Initial Interview</div>
+    <div class="cover-sub-zh">初次访谈 · 高阶访谈提纲</div>
+    <div class="cover-sub">First-meeting diagnostic interview with FE Credit's data lead.<br>50–60 min · English-first · WeBank as benchmark.</div>
+    <div class="threads">
+      <div class="thread" style="border-color:var(--blue);color:var(--blue)">🟦 Management<small>管理架构 · Q1–Q3 · 12–15 min</small></div>
+      <div class="thread" style="border-color:var(--orange);color:var(--orange)">🟧 Platform<small>平台架构 · Q4–Q7 · 25–30 min</small></div>
+      <div class="thread" style="border-color:var(--red);color:var(--red)">🟥 Blocking Business<small>阻碍性业务 · Q8–Q10 · 15 min</small></div>
+    </div>
+    <p style="margin-top:30px;color:var(--mut2);font-size:13px">Press <kbd>→</kbd> to begin · <kbd>O</kbd> overview · <kbd>Z</kbd> 中文</p>
+  </div>`;
+}
+
+function agenda(){
+  const rows=[
+    ['🟦','Warm-up','Q1 → Q2 → Q3','12–15 min','Build rapport, gauge org maturity & pain','破冰'],
+    ['🟧','Tech baseline','Q4 → Q5 → Q6 → Q7','25–30 min','Platform arch & hybrid-cloud bottlenecks','摸家底'],
+    ['🟥','Wrap-up','Q8 → Q9 → Q10','15 min','Business value + Top 3 entry points','收口'],
+  ];
+  return `<div class="scroll-area">
+    <span class="seg-tag seg-x">Agenda <span class="zhsub">沟通节奏</span></span>
+    <h1 class="title">Three threads, one conversation</h1>
+    <div class="title-zh">三条主线 · 一场访谈</div>
+    <div class="card-block" style="margin-top:18px">
+      <table>
+        <thead><tr><th></th><th>Segment</th><th>Q#</th><th>Time</th><th>Purpose</th></tr></thead>
+        <tbody>
+        ${rows.map(r=>`<tr><td style="font-size:18px">${r[0]}</td><td><b>${r[1]}</b><div class="zh-line">${r[5]}</div></td><td class="b">${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:16px;color:var(--mut);font-size:14px">Goal: a maturity read on each thread, the Top 3 pain points, and clear next-step entry points.</p>
+  </div>`;
+}
+
+function benchmark(){
+  const rows=[
+    ['Total / daily growth','10.5 PB / 75 TB','Gauge FEC scale'],
+    ['Core tables DWD / DWS','3600+ / 1700+','Layering discipline'],
+    ['Assets (tables/metrics/tags)','A 1000+ / B 9000+ / C 8000+','A txn / B ext / C tags'],
+    ['External sources / onboarding','200+ / ≤15 days','Config vs manual'],
+    ['Operators / graph','220+ / graph wh','Low-code maturity'],
+    ['Strategy input params','100k+','Variable reuse'],
+    ['Self-service analytics','22000+ clicks / 30d','Business self-service'],
+    ['AWS / hybrid (FEC-specific)','no WeBank baseline','DX/VPN + CDC + Region compliance'],
+  ];
+  return `<div class="scroll-area">
+    <span class="seg-tag seg-x">Benchmark <span class="zhsub">对标基线速查</span></span>
+    <h1 class="title">WeBank reference baseline</h1>
+    <div class="title-zh">微众参考基线 · 现场对照定位</div>
+    <div class="card-block" style="margin-top:10px">
+      <table>
+        <thead><tr><th>Capability</th><th>WeBank ref</th><th>Note</th></tr></thead>
+        <tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td class="b">${r[1]}</td><td style="color:var(--mut)">${r[2]}</td></tr>`).join('')}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function question(q,i){
+  const S=SEG[q.seg];
+  let metas='';
+  metas+=`<div class="meta"><h4>Intent <span class="zhsub">诊断意图</span></h4><p>${q.intent}</p></div>`;
+  if(q.bench) metas+=`<div class="meta"><h4>Benchmark <span class="zhsub">对标</span></h4><p>${q.bench}</p></div>`;
+  if(q.probe) metas+=`<div class="meta"><h4>Probe <span class="zhsub">追问</span></h4><p class="probe-q">${q.probe}</p></div>`;
+  let sigs='';
+  if(q.good||q.bad){
+    sigs=`<div class="meta"><h4>Signals <span class="zhsub">判断信号</span></h4><div class="signals">
+      ${q.good?`<div class="sig good"><span class="ico">✅</span><span><b>Mature:</b> ${q.good}</span></div>`:''}
+      ${q.bad?`<div class="sig bad"><span class="ico">⚠️</span><span><b>Risk:</b> ${q.bad}</span></div>`:''}
+    </div></div>`;
+  }
+  const noteId='note-'+q.id;
+  const notes=`<div class="notes-wrap">
+      <h4>Notes <span class="zhsub">现状记录</span></h4>
+      <textarea class="notes" id="${noteId}" data-id="${q.id}" placeholder="${(q.notes||[]).join('   ·   ')}"></textarea>
+    </div>`;
+  return `<div class="scroll-area">
+    <span class="seg-tag ${S.cls}">${ ({m:'🟦',p:'🟧',b:'🟥'})[q.seg] } ${S.name} · ${S.qrange} <span class="zhsub">${S.zh}</span></span>
+    <div class="qnum">${q.id.toUpperCase()}</div>
+    <h1 class="title">${q.en}</h1>
+    <div class="title-zh">${q.zh}</div>
+    <div class="question">${q.q}</div>
+    <div class="question zh">${q.qzh}</div>
+    <div class="meta-grid">${metas}${sigs}</div>
+    ${notes}
+  </div>`;
+}
+
+/* ---------- navigation ---------- */
+let current=0;
+let overview=false;
+
+function show(i){
+  current=Math.max(0,Math.min(slides.length-1,i));
+  document.querySelectorAll('.slide').forEach((el,idx)=>{
+    el.classList.toggle('active', idx===current && !overview);
+  });
+  document.querySelectorAll('.dot').forEach((d,idx)=>{
+    d.classList.toggle('active',idx===current);
+    d.classList.toggle('done',idx<current);
+  });
+  const s=slides[current];
+  let label='';
+  if(s.type==='question'){const S=SEG[s.q.seg];label=s.q.id+' · '+S.name+' · '+S.qrange;}
+  else label=s.type.charAt(0).toUpperCase()+s.type.slice(1);
+  whereEl.textContent=(current+1)+' / '+slides.length+'  ·  '+label;
+}
+function go(i){if(overview){toggleOverview(false);} show(i);}
+function next(){show(current+1)}
+function prev(){show(current-1)}
+
+function toggleOverview(force){
+  overview=(force!==undefined)?force:!overview;
+  const sl=document.querySelectorAll('.slide');
+  if(overview){
+    stage.style.overflowY='auto';stage.style.display='block';
+    sl.forEach(el=>{
+      el.style.display='block';el.style.height='auto';el.style.minHeight='auto';
+      el.style.padding='20px 6vw';el.style.borderBottom='1px solid var(--line)';
+      el.classList.remove('active');
+    });
+    document.getElementById('btnOverview').classList.add('active');
+  }else{
+    sl.forEach(el=>{el.style.display='';el.style.height='';el.style.minHeight='';el.style.padding='';el.style.borderBottom='';});
+    stage.style.overflowY='';stage.style.display='';
+    document.getElementById('btnOverview').classList.remove('active');
+    show(current);
+  }
+}
+
+/* ---------- notes persistence ---------- */
+function loadNotes(){
+  try{
+    const data=JSON.parse(sessionStorage.getItem('fec-notes')||'{}');
+    document.querySelectorAll('textarea.notes').forEach(t=>{ if(data[t.dataset.id]) t.value=data[t.dataset.id]; });
+  }catch(e){}
+}
+document.addEventListener('input',e=>{
+  if(e.target.classList&&e.target.classList.contains('notes')){
+    const out={};document.querySelectorAll('textarea.notes').forEach(t=>{if(t.value)out[t.dataset.id]=t.value;});
+    sessionStorage.setItem('fec-notes',JSON.stringify(out));
+  }
+});
+
+/* ---------- theme / zh / fullscreen ---------- */
+function toggleTheme(){document.documentElement.classList.toggle('light')}
+function toggleFull(){if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()}
+function toggleZH(){
+  const on=document.body.classList.toggle('with-zh');
+  document.getElementById('btnZH').classList.toggle('active',on);
+  sessionStorage.setItem('fec-zh',on?'1':'0');
+}
+
+/* ---------- keys ---------- */
+document.addEventListener('keydown',e=>{
+  if(/TEXTAREA|INPUT/.test(document.activeElement.tagName)) return;
+  if(e.key==='ArrowRight'||e.key==='PageDown') next();
+  else if(e.key==='ArrowLeft'||e.key==='PageUp') prev();
+  else if(e.key==='Home') show(0);
+  else if(e.key==='End') show(slides.length-1);
+  else if(e.key.toLowerCase()==='o') toggleOverview();
+  else if(e.key.toLowerCase()==='z') toggleZH();
+  else if(e.key.toLowerCase()==='t') toggleTheme();
+  else if(e.key.toLowerCase()==='f'){e.preventDefault();toggleFull();}
+});
+
+/* ---------- wire ---------- */
+document.getElementById('next').onclick=next;
+document.getElementById('prev').onclick=prev;
+document.getElementById('btnOverview').onclick=()=>toggleOverview();
+document.getElementById('btnTheme').onclick=toggleTheme;
+document.getElementById('btnFull').onclick=toggleFull;
+document.getElementById('btnZH').onclick=toggleZH;
+
+build();
+loadNotes();
+if(sessionStorage.getItem('fec-zh')==='1') toggleZH();
+show(0);
+</script>
+</body>
+</html>
